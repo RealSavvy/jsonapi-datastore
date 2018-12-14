@@ -227,6 +227,13 @@ var JsonApiDataStore = (function () {
         }
       }
 
+      for (key in rec.links) {
+        if (model._links.indexOf(key) === -1) {
+          model._links.push(key);
+        }
+        model[key] = rec.links[key];
+      }
+
       return model;
     }
 
@@ -265,7 +272,7 @@ var JsonApiDataStore = (function () {
   return JsonApiDataStore;
 })();
 
-if ('undefined' !== typeof module) {
+if ("undefined" !== typeof module) {
   module.exports = {
     JsonApiDataStore: JsonApiDataStore,
     JsonApiDataStoreModel: JsonApiDataStoreModel

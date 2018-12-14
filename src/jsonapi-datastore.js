@@ -1,7 +1,7 @@
 /**
  * @class JsonApiDataStoreModel
  */
- class JsonApiDataStoreModel {
+class JsonApiDataStoreModel {
   /**
    * @method constructor
    * @param {string} type The type of the model.
@@ -26,8 +26,8 @@
    */
   serialize(opts) {
     var self = this,
-        res = { data: { type: this._type } },
-        key;
+      res = { data: { type: this._type } },
+      key;
 
     opts = opts || {};
     opts.attributes = opts.attributes || this._attributes;
@@ -60,7 +60,7 @@
       }
     });
 
-    opts.links.forEach(function (key) {
+    opts.links.forEach(function(key) {
       res.data.links[key] = self[key];
     });
 
@@ -132,7 +132,9 @@ class JsonApiDataStore {
     var self = this;
 
     if (!this.graph[type]) return [];
-    return Object.keys(self.graph[type]).map(function(v) { return self.graph[type][v]; });
+    return Object.keys(self.graph[type]).map(function(v) {
+      return self.graph[type][v];
+    });
   }
 
   /**
@@ -145,15 +147,16 @@ class JsonApiDataStore {
 
   initModel(type, id) {
     this.graph[type] = this.graph[type] || {};
-    this.graph[type][id] = this.graph[type][id] || new JsonApiDataStoreModel(type, id);
+    this.graph[type][id] =
+      this.graph[type][id] || new JsonApiDataStoreModel(type, id);
 
     return this.graph[type][id];
   }
 
   syncRecord(rec) {
     var self = this,
-        model = this.initModel(rec.type, rec.id),
-        key;
+      model = this.initModel(rec.type, rec.id),
+      key;
 
     function findOrInit(resource) {
       if (!self.find(resource.type, resource.id)) {
@@ -191,6 +194,13 @@ class JsonApiDataStore {
       }
     }
 
+    for (key in rec.links) {
+      if (model._links.indexOf(key) === -1) {
+        model._links.push(key);
+      }
+      model[key] = rec.links[key];
+    }
+
     return model;
   }
 
@@ -202,12 +212,15 @@ class JsonApiDataStore {
    */
   syncWithMeta(payload) {
     var primary = payload.data,
-        syncRecord = this.syncRecord.bind(this);
+      syncRecord = this.syncRecord.bind(this);
     if (!primary) return [];
     if (payload.included) payload.included.map(syncRecord);
     return {
-      data: (primary.constructor === Array) ? primary.map(syncRecord) : syncRecord(primary),
-      meta: ("meta" in payload) ? payload.meta : null
+      data:
+        primary.constructor === Array
+          ? primary.map(syncRecord)
+          : syncRecord(primary),
+      meta: "meta" in payload ? payload.meta : null
     };
   }
 
@@ -222,7 +235,7 @@ class JsonApiDataStore {
   }
 }
 
-if ('undefined' !== typeof module) {
+if ("undefined" !== typeof module) {
   module.exports = {
     JsonApiDataStore: JsonApiDataStore,
     JsonApiDataStoreModel: JsonApiDataStoreModel

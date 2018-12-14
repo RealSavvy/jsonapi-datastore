@@ -30,8 +30,10 @@
   },
   "homepage": "https://github.com/beauby/jsonapi-datastore#readme",
   "devDependencies": {
+    "babel": "^5.8.23",
     "chai": "^3.2.0",
-    "gulp": "^3.9.0",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^5.2.1",
     "gulp-concat": "^2.6.0",
     "gulp-jsbeautify": "^0.1.1",
     "gulp-jscs": "^2.0.0",
@@ -41,8 +43,6 @@
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "^1.2.0",
     "gulp-wrap": "^0.11.0",
-    "gulp-babel": "^5.2.1",
-    "babel": "^5.8.23",
     "mocha": "^2.2.5"
   }
 }

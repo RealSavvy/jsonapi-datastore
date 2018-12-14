@@ -1,7 +1,7 @@
 /**
  * @class JsonApiDataStoreModel
  */
- class JsonApiDataStoreModel {
+class JsonApiDataStoreModel {
   /**
    * @method constructor
    * @param {string} type The type of the model.
@@ -12,6 +12,7 @@
     this._type = type;
     this._attributes = [];
     this._relationships = [];
+    this._links = [];
   }
 
   /**
@@ -25,16 +26,18 @@
    */
   serialize(opts) {
     var self = this,
-        res = { data: { type: this._type } },
-        key;
+      res = { data: { type: this._type } },
+      key;
 
     opts = opts || {};
     opts.attributes = opts.attributes || this._attributes;
     opts.relationships = opts.relationships || this._relationships;
+    opts.links = opts.links || this._links;
 
     if (this.id !== undefined) res.data.id = this.id;
     if (opts.attributes.length !== 0) res.data.attributes = {};
     if (opts.relationships.length !== 0) res.data.relationships = {};
+    if (opts.links.length !== 0) res.data.links = {};
 
     opts.attributes.forEach(function(key) {
       res.data.attributes[key] = self[key];
@@ -55,6 +58,10 @@
           data: relationshipIdentifier(self[key])
         };
       }
+    });
+
+    opts.links.forEach(function(key) {
+      res.data.links[key] = self[key];
     });
 
     return res;
@@ -125,7 +132,9 @@ class JsonApiDataStore {
     var self = this;
 
     if (!this.graph[type]) return [];
-    return Object.keys(self.graph[type]).map(function(v) { return self.graph[type][v]; });
+    return Object.keys(self.graph[type]).map(function(v) {
+      return self.graph[type][v];
+    });
   }
 
   /**
@@ -138,15 +147,16 @@ class JsonApiDataStore {
 
   initModel(type, id) {
     this.graph[type] = this.graph[type] || {};
-    this.graph[type][id] = this.graph[type][id] || new JsonApiDataStoreModel(type, id);
+    this.graph[type][id] =
+      this.graph[type][id] || new JsonApiDataStoreModel(type, id);
 
     return this.graph[type][id];
   }
 
   syncRecord(rec) {
     var self = this,
-        model = this.initModel(rec.type, rec.id),
-        key;
+      model = this.initModel(rec.type, rec.id),
+      key;
 
     function findOrInit(resource) {
       if (!self.find(resource.type, resource.id)) {
@@ -184,6 +194,15 @@ class JsonApiDataStore {
       }
     }
 
+    model.__links = {};
+
+    for (key in rec.links) {
+      if (model._links.indexOf(key) === -1) {
+        model._links.push(key);
+      }
+      model.__links[key] = rec.links[key];
+    }
+
     return model;
   }
 
@@ -195,12 +214,15 @@ class JsonApiDataStore {
    */
   syncWithMeta(payload) {
     var primary = payload.data,
-        syncRecord = this.syncRecord.bind(this);
+      syncRecord = this.syncRecord.bind(this);
     if (!primary) return [];
     if (payload.included) payload.included.map(syncRecord);
     return {
-      data: (primary.constructor === Array) ? primary.map(syncRecord) : syncRecord(primary),
-      meta: ("meta" in payload) ? payload.meta : null
+      data:
+        primary.constructor === Array
+          ? primary.map(syncRecord)
+          : syncRecord(primary),
+      meta: "meta" in payload ? payload.meta : null
     };
   }
 
@@ -215,7 +237,7 @@ class JsonApiDataStore {
   }
 }
 
-if ('undefined' !== typeof module) {
+if ("undefined" !== typeof module) {
   module.exports = {
     JsonApiDataStore: JsonApiDataStore,
     JsonApiDataStoreModel: JsonApiDataStoreModel

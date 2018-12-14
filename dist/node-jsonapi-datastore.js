@@ -41,6 +41,7 @@
       this._type = type;
       this._attributes = [];
       this._relationships = [];
+      this._links = [];
     }
 
     /**
@@ -71,10 +72,12 @@
         opts = opts || {};
         opts.attributes = opts.attributes || this._attributes;
         opts.relationships = opts.relationships || this._relationships;
+        opts.links = opts.links || this._links;
 
         if (this.id !== undefined) res.data.id = this.id;
         if (opts.attributes.length !== 0) res.data.attributes = {};
         if (opts.relationships.length !== 0) res.data.relationships = {};
+        if (opts.links.length !== 0) res.data.links = {};
 
         opts.attributes.forEach(function(key) {
           res.data.attributes[key] = self[key];
@@ -100,6 +103,10 @@
               data: relationshipIdentifier(self[key])
             };
           }
+        });
+
+        opts.links.forEach(function(key) {
+          res.data.links[key] = self[key];
         });
 
         return res;
@@ -249,6 +256,15 @@
           }
         }
 
+        model.__links = {};
+
+        for (key in rec.links) {
+          if (model._links.indexOf(key) === -1) {
+            model._links.push(key);
+          }
+          model.__links[key] = rec.links[key];
+        }
+
         return model;
       }
 
@@ -287,7 +303,7 @@
     return JsonApiDataStore;
   })();
 
-  if ('undefined' !== typeof module) {
+  if ("undefined" !== typeof module) {
     module.exports = {
       JsonApiDataStore: JsonApiDataStore,
       JsonApiDataStoreModel: JsonApiDataStoreModel
